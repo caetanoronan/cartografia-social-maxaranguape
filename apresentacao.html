@@ -588,6 +588,78 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Lightbox para imagens em tela cheia */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            animation: zoomIn 0.3s ease;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .image-container img {
+            cursor: zoom-in;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .image-container img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -1073,9 +1145,15 @@
         <p><strong>GEA014903</strong> - Geoprocessamento Aplicado | Curso Técnico em Geoprocessamento</p>
         <p>Autor: <strong>Ronan Armando Caetano</strong> | Dezembro de 2025</p>
         <p style="margin-top: 10px; font-size: 0.9rem;">
-            💻 Navegue usando as abas, botões ou teclas ← → | 🌙/☀️ Alterne o tema no botão superior
+            💻 Navegue usando as abas, botões ou teclas ← → | 🌙/☀️ Alterne o tema no botão superior | 🔍 Clique nas imagens para ampliar
         </p>
     </footer>
+
+    <!-- Lightbox para ampliar imagens -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img id="lightbox-img" src="" alt="">
+    </div>
 
     <script>
         let currentSlide = 0;
@@ -1194,6 +1272,46 @@
 
         window.addEventListener('afterprint', function() {
             showSlide(currentSlide);
+        });
+
+        // Função para abrir imagem no lightbox
+        function openLightbox(imgElement) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            
+            lightboxImg.src = imgElement.src;
+            lightboxImg.alt = imgElement.alt;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Previne scroll
+        }
+
+        // Função para fechar o lightbox
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restaura scroll
+        }
+
+        // Adiciona evento de clique em todas as imagens
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('.image-container img');
+            images.forEach(img => {
+                // Pula imagens que têm onerror (placeholders)
+                if (!img.complete || img.naturalHeight === 0) {
+                    return;
+                }
+                img.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openLightbox(this);
+                });
+            });
+        });
+
+        // Fecha lightbox com tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
         });
     </script>
 </body>
